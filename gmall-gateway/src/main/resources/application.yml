@@ -24,10 +24,35 @@ spring:
           uri: lb://oms-service
           predicates:
             - Path=/oms/**
-        - id: search-route
+        - id: search-route # Host可以根据域名判断请求是否进入该路由
           uri: lb://search-service
           predicates:
-            - Host=search.gmall.com # host 根据域名判断 请求是否进入该路由
+            - Host=search.gmall.com
+        - id: index-route1 # 同步跳转后台服务
+          uri: lb://index-service
+          predicates:
+            - Host=www.gmall.com, gmall.com
+          #  - Path=/index/**  如果写在这里，两个断言之间是and关系
+        - id: index-route2 # 异步获取数据的路由
+          uri: lb://index-service
+          predicates:
+            - Path=/index/**
+        - id: item-route
+          uri: lb://item-service
+          predicates:
+            - Host=item.gmall.com
+        - id: auth-route
+          uri: lb://auth-service
+          predicates:
+            - Host=sso.gmall.com
+        - id: cart-route
+          uri: lb://cart-service
+          predicates:
+            - Host=cart.gmall.com
+      #          filters: 即使未登录也可以添加购物车
+      #            - Auth=/
+      x-forwarded:
+        host-enabled: true
     nacos:
       discovery:
         server-addr: localhost:8848

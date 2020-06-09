@@ -25,6 +25,16 @@ spring:
   redis:
     host: 212.64.52.80
     port: 6379
+  rabbitmq:
+    host: 212.64.52.80
+    virtual-host: /dpc
+    username: dpc
+    password: dpc
+    publisher-returns: true
+    publisher-confirm-type: simple
+    listener:
+      simple:
+        prefetch: 1
 feign:
   sentinel:
     enabled: true

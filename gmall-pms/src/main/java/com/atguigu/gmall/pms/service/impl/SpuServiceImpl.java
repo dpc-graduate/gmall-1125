@@ -13,6 +13,7 @@ import com.atguigu.gmall.pms.service.SkuImagesService;
 import com.atguigu.gmall.pms.service.SpuAttrValueService;
 import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,8 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
     private SkuAttrValueService skuAttrValueService;
     @Autowired
     private GmallSmsClient gmallSmsClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
@@ -148,6 +151,9 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
             saleVo.setSkuId(skuId);
             BeanUtils.copyProperties(skuVo, saleVo);
             this.gmallSmsClient.saveSale(saleVo);
+            this.rabbitTemplate.convertAndSend("GMALL_ITEM_EXCHANGE","item.insert",spuVoId);
+            System.out.println("消息发送成功！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！");
+
         });
 
     }

@@ -34,6 +34,12 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
+    @GetMapping("all/{cid3}")
+    public ResponseVo<List<CategoryEntity>> queryCategoriesByCid3(@PathVariable Long cid3) {
+        List<CategoryEntity> categoryEntities = this.categoryService.queryCategoriesByCid3(cid3);
+        return ResponseVo.ok(categoryEntities);
+    }
+
     /**
      * 列表
      */
@@ -91,11 +97,17 @@ public class CategoryController {
     }
 
     @GetMapping("parent/{id}")
-    public ResponseVo<List<CategoryEntity>> queryCategoriesByPid(@PathVariable("id")Long id){
-        List<CategoryEntity> categoryEntities= this.categoryService.queryCategoriesByPid(id);
+    public ResponseVo<List<CategoryEntity>> queryCategoriesByPid(@PathVariable("id") Long id) {
+        List<CategoryEntity> categoryEntities = this.categoryService.queryCategoriesByPid(id);
         return ResponseVo.ok(categoryEntities);
     }
 
-
-
+    /**
+     * 根据一级分类查询二级分类和二级分类对应的子分类
+     */
+    @GetMapping("parent/with/subs/{pid}")
+    public ResponseVo<List<CategoryEntity>> queryCategoriesSubByPid(@PathVariable Long pid) {
+        List<CategoryEntity> categoryEntities = this.categoryService.queryCategoriesSubByPid(pid);
+        return ResponseVo.ok(categoryEntities);
+    }
 }

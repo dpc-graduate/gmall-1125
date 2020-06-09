@@ -1,5 +1,7 @@
 package com.atguigu.gmall.sms.service.impl;
 
+
+import com.atguigu.gmall.pms.vo.ItemSaleVo;
 import com.atguigu.gmall.sms.entity.SmsSkuFullReductionEntity;
 import com.atguigu.gmall.sms.entity.SmsSkuLadderEntity;
 import com.atguigu.gmall.sms.entity.vo.SkuSaleVo;
@@ -8,8 +10,11 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,10 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("smsSkuBoundsService")
 public class SmsSkuBoundsServiceImpl extends ServiceImpl<SmsSkuBoundsMapper, SmsSkuBoundsEntity> implements SmsSkuBoundsService {
-@Autowired
-private SmsSkuFullReductionServiceImpl reductionService;
-@Autowired
-private SmsSkuLadderService smsSkuLadderService;
+    @Autowired
+    private SmsSkuFullReductionServiceImpl reductionService;
+    @Autowired
+    private SmsSkuLadderService smsSkuLadderService;
+
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
         IPage<SmsSkuBoundsEntity> page = this.page(
@@ -49,7 +55,7 @@ private SmsSkuLadderService smsSkuLadderService;
         entity.setBuyBounds(skuSaleVo.getBuyBounds());
         List<Integer> works = skuSaleVo.getWork();
         //设置一种规则去保存 1111 这种二进制数据，在读取的时候再通过某种规则转换过来
-        entity.setWork(works.get(3)*8+works.get(2)*4+works.get(1)*2+works.get(0));
+        entity.setWork(works.get(3) * 8 + works.get(2) * 4 + works.get(1) * 2 + works.get(0));
         this.save(entity);
         //保存满减信息
         SmsSkuFullReductionEntity reductionEntity = new SmsSkuFullReductionEntity();
@@ -65,6 +71,40 @@ private SmsSkuLadderService smsSkuLadderService;
         smsSkuLadderEntity.setDiscount(skuSaleVo.getDiscount());
         smsSkuLadderEntity.setAddOther(skuSaleVo.getFullAddOther());
         this.smsSkuLadderService.save(smsSkuLadderEntity);
+    }
+
+    @Override
+    public List<ItemSaleVo> querySaleVoBySkuId(Long skuId) {
+        List<ItemSaleVo> itemSaleVos = new ArrayList<>();
+
+        // 积分
+        SmsSkuBoundsEntity boundsEntity = this.getOne(new QueryWrapper< SmsSkuBoundsEntity>().eq("sku_id", skuId));
+        if (boundsEntity != null) {
+            ItemSaleVo boundSaleVo = new ItemSaleVo();
+            boundSaleVo.setType("积分");
+            boundSaleVo.setDesc("送" + boundsEntity.getGrowBounds() + "成长积分，送" + boundsEntity.getBuyBounds() + "购物积分");
+            itemSaleVos.add(boundSaleVo);
+        }
+
+        // 满减
+        SmsSkuFullReductionEntity reductionEntity = this.reductionService.getOne(new QueryWrapper< SmsSkuFullReductionEntity>().eq("sku_id", skuId));
+        if (reductionEntity != null) {
+            ItemSaleVo reductionSaleVo = new ItemSaleVo();
+            reductionSaleVo.setType("满减");
+            reductionSaleVo.setDesc("满" + reductionEntity.getFullPrice() + "减" + reductionEntity.getReducePrice());
+            itemSaleVos.add(reductionSaleVo);
+        }
+
+        // 打折
+        SmsSkuLadderEntity ladderEntity = this.smsSkuLadderService.getOne(new QueryWrapper< SmsSkuLadderEntity>().eq("sku_id", skuId));
+        if (ladderEntity != null) {
+            ItemSaleVo ladderSaleVo = new ItemSaleVo();
+            ladderSaleVo.setType("打折");
+            ladderSaleVo.setDesc("满" + ladderEntity.getFullCount() + "件打" + ladderEntity.getDiscount().divide(new BigDecimal(10)) + "折");
+            itemSaleVos.add(ladderSaleVo);
+        }
+
+        return itemSaleVos;
     }
 
 }

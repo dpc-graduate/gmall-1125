@@ -9,6 +9,15 @@ spring:
       transport:
         dashboard: localhost:8080
         port: 8719
+  rabbitmq:
+    host: 212.64.52.80
+    virtual-host: /dpc
+    username: dpc
+    password: dpc
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
   zipkin:
     base-url: localhost:9411
     discovery-client-enabled: false
@@ -20,6 +29,10 @@ spring:
   elasticsearch:
     rest:
       uris: http://192.168.1.107:9200
+  jackson:
+    default-property-inclusion: non_null
+  thymeleaf:
+    cache: false
 feign:
   sentinel:
     enabled: true

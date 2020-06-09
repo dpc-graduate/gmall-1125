@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.atguigu.gmall.pms.entity.AttrEntity;
 import com.atguigu.gmall.pms.entity.vo.GroupVo;
+import com.atguigu.gmall.pms.vo.ItemGroupVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.api.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,5 +106,13 @@ public class AttrGroupController {
     public ResponseVo<List<GroupVo>> queryForGroup(@PathVariable("cid") Long cid) {
         List<GroupVo> groupVos=  this.attrGroupService.queryForGroup(cid);
         return ResponseVo.ok(groupVos);
+    }
+    @GetMapping("item/group")
+    public ResponseVo<List<ItemGroupVo>> queryItemGroupByCiuAndSpuIdAndSkuId(
+            @RequestParam("cid") Long cid,
+            @RequestParam("spuId") Long spuId,
+            @RequestParam("skuId") Long skuId){
+        List<ItemGroupVo> itemGroupVos=this.attrGroupService.queryItemGroupByCiuAndSpuIdAndSkuId(cid,spuId,skuId);
+        return ResponseVo.ok(itemGroupVos);
     }
 }

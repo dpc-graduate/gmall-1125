@@ -18,6 +18,7 @@ import com.atguigu.gmall.pms.service.SpuAttrValueService;
 import com.atguigu.gmall.common.bean.PageResultVo;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import com.atguigu.gmall.common.bean.PageParamVo;
+import sun.rmi.runtime.Log;
 
 /**
  * spu属性值
@@ -45,6 +46,10 @@ public class SpuAttrValueController {
         return ResponseVo.ok(pageResultVo);
     }
 
+@GetMapping("spu/{spuId}")
+public ResponseVo<List<SpuAttrValueEntity>> querySpuAttrValueEntity(@PathVariable Long spuId){
+   return ResponseVo.ok(this.spuAttrValueService.querySpuAttrValueEntity(spuId));
+}
 
     /**
      * 信息
