@@ -28,7 +28,7 @@ spring:
       probability: 1
   elasticsearch:
     rest:
-      uris: http://192.168.1.107:9200
+      uris: http://192.168.8.95:9200
   jackson:
     default-property-inclusion: non_null
   thymeleaf:

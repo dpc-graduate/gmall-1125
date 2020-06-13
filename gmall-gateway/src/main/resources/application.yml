@@ -51,8 +51,18 @@ spring:
             - Host=cart.gmall.com
       #          filters: 即使未登录也可以添加购物车
       #            - Auth=/
+        - id: order-route
+          uri: lb://order-service
+          predicates:
+              - Host=order.gmall.com
+#          filters:
+#              - Auth=/
       x-forwarded:
         host-enabled: true
     nacos:
       discovery:
         server-addr: localhost:8848
+auth:
+  jwt:
+    pubKeyPath: D:\dpc\rsa\\rsa.pub
+    cookieName: GMALL-TOKEN
