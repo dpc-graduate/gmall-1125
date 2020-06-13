@@ -1,7 +1,7 @@
 package com.atguigu.gmall.order.vo;
 
+import com.atguigu.gmall.oms.vo.OrderItemVo;
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
-import io.swagger.models.auth.In;
 import lombok.Data;
 
 import java.util.List;

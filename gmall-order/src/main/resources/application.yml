@@ -40,7 +40,7 @@ spring:
 #        await-termination: true
 #        await-termination-period: 90
   rabbitmq:
-    host: 192.168.8.95
+    host: 212.64.52.80
     virtual-host: /dpc
     username: dpc
     password: dpc
@@ -48,6 +48,8 @@ spring:
       simple:
         acknowledge-mode: manual
         prefetch: 1
+    publisher-confirm-type: simple
+    publisher-returns: true
 feign:
   sentinel:
     enabled: true
