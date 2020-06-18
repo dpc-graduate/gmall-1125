@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.Servlet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  * @data: 2020/6/2,11:03
  */
 @Controller
-public class IndexController {
+public class IndexController{
     @Autowired
     private IndexService indexService;
 

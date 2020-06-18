@@ -131,7 +131,7 @@ public class OrderService {
      *
      * @param submitVo
      */
-    public void submit(OrderSubmitVo submitVo) {
+    public OrderEntity submit(OrderSubmitVo submitVo) {
         // 防重 查询redis是否包含当前页面提交的token，包含? 先删除 再放行。不包含，抛出异常
         String orderToken = submitVo.getOrderToken();
         String script = "if redis.call('get', KEYS[1]) == ARGV[1]" +
@@ -172,22 +172,26 @@ public class OrderService {
         }
         Long userId = null;
         // 新增订单
+
+        OrderEntity orderEntity = null;
         try {
             userId = LoginInterceptor.getUserInfo().getUserId();
             submitVo.setUserId(userId);
-            OrderEntity orderEntity = this.omsClient.saveOrder(submitVo).getData();
+            orderEntity = this.omsClient.saveOrder(submitVo).getData();
         } catch (Exception e) {
             e.printStackTrace();
             //TODO:
-            //订单创建失败，立马解锁库存
+            //订单创建失败，立马发送消息给wms解锁库存，但是这里要是宕机了怎么办？  可以在上面定时解锁库存
+            this.rabbitTemplate.convertAndSend("ORDER_EXCHANGE", "stock.unlock", orderToken);
+            throw new OrderException("订单创建失败" + e.getMessage());
         }
         // 删除购物车,对后续业务没影响，可以使用异步删除MQ
         Map<String, Object> map = new HashMap<String, Object>();
         List<Long> skuIdList = items.stream().map(OrderItemVo::getSkuId).collect(Collectors.toList());
         map.put("userId", userId);
-        map.put("skuIds",JSON.toJSONString(skuIdList));
+        map.put("skuIds", JSON.toJSONString(skuIdList));
         this.rabbitTemplate.convertAndSend("ORDER-EXCHANGE", "cart.delete", map);
 
-
+        return orderEntity;
     }
 }

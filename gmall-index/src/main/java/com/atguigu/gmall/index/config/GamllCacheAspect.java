@@ -65,6 +65,7 @@ public class GamllCacheAspect {
         this.redisTemplate.opsForValue().set(key,JSON.toJSONString(result),time, TimeUnit.MINUTES);
         //放入缓存，释放锁
         fairLock.unlock();
+
         return result;
     }
 }

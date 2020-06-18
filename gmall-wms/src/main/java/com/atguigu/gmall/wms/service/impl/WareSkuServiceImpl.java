@@ -4,12 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.wms.entity.vo.SkuLockVo;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Time;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -21,6 +24,7 @@ import com.atguigu.gmall.common.bean.PageParamVo;
 import com.atguigu.gmall.wms.mapper.WareSkuMapper;
 import com.atguigu.gmall.wms.entity.WareSkuEntity;
 import com.atguigu.gmall.wms.service.WareSkuService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -30,6 +34,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuMapper, WareSkuEntity
     private RedissonClient redissonClient;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     private static final String KEY_PREFIX = "wms:stock";
 
     @Override
@@ -43,6 +49,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuMapper, WareSkuEntity
     }
 
     @Override
+    @Transactional
     public List<SkuLockVo> checkAndLock(List<SkuLockVo> lockVos, String OrderToken) {
         if (CollectionUtils.isEmpty(lockVos)) {
             return null;
@@ -63,7 +70,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuMapper, WareSkuEntity
             return lockVos;
         }
         //把库存的锁定信息保存到redis中
-        this.redisTemplate.opsForValue().set(KEY_PREFIX + OrderToken, JSON.toJSONString(lockVos));
+        this.redisTemplate.opsForValue().set(KEY_PREFIX + OrderToken, JSON.toJSONString(lockVos),5, TimeUnit.MINUTES);
+this.rabbitTemplate.convertAndSend("ORDER_EXCHANGE","stock.ttl",OrderToken);
         return null;
     }
 

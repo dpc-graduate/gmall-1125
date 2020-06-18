@@ -3,6 +3,7 @@ package com.atguigu.gmall.oms.controller;
 import java.util.List;
 
 import com.atguigu.gmall.oms.vo.OrderSubmitVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,4 +98,8 @@ public class OrderController {
         return ResponseVo.ok();
     }
 
+    @GetMapping("query/{orderToken}")
+    public ResponseVo<OrderEntity> queryOrderByOrderToken(@PathVariable("orderToken") String orderToken) {
+        return ResponseVo.ok(this.orderService.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderToken)));
+    }
 }

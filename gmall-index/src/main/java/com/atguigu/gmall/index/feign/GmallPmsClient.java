@@ -1,6 +1,7 @@
 package com.atguigu.gmall.index.feign;
 
 import com.atguigu.gmall.pms.api.GmallPmsApi;
+import lombok.Synchronized;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 
@@ -11,4 +12,5 @@ import org.springframework.stereotype.Component;
 
 @FeignClient("pms-service")
 public interface GmallPmsClient extends GmallPmsApi {
+
 }

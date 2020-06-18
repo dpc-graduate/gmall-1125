@@ -54,7 +54,19 @@ spring:
         - id: order-route
           uri: lb://order-service
           predicates:
-              - Host=order.gmall.com
+            - Host=order.gmall.com
+          filters:
+            - Auth=/
+        - id: payment-route
+          uri: lb://payment-service
+          predicates:
+            - Host=payment.gmall.com
+          filters:
+            - Auth=/pay.html,/alipay.html
+        - id: payment-route
+          uri: lb://payment-service
+          predicates:
+            - Path=/pay/**
 #          filters:
 #              - Auth=/
       x-forwarded:

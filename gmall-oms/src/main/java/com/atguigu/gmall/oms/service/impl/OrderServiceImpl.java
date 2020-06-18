@@ -15,6 +15,7 @@ import com.atguigu.gmall.pms.entity.SpuEntity;
 import com.atguigu.gmall.pms.vo.SaleAttrValueVo;
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import com.atguigu.gmall.ums.entity.UserEntity;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ import com.atguigu.gmall.common.bean.PageParamVo;
 import com.atguigu.gmall.oms.mapper.OrderMapper;
 import com.atguigu.gmall.oms.entity.OrderEntity;
 import com.atguigu.gmall.oms.service.OrderService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -43,6 +45,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
     private GmallPmsClient pmsClient;
     @Autowired
     private OrderItemMapper itemMapper;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
@@ -61,6 +65,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
      * @return
      */
     @Override
+    @Transactional
     public OrderEntity saveOrder(OrderSubmitVo submitVo) {
         List<OrderItemVo> items = submitVo.getItems();
         if (CollectionUtils.isEmpty(items)) {
@@ -95,6 +100,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
         entity.setDeleteStatus(0);
         entity.setUseIntegration(submitVo.getBounds());
         entity.setIntegrationAmount(new BigDecimal(submitVo.getBounds() / 100));
+        this.save(entity);
         //TODO:备注没做
         /*
             新增order_item 表 订单商品详情
@@ -131,8 +137,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
                     itemEntity.setSkuAttrsVals(JSON.toJSONString(attrValueVos));
                 }
                 //TODO:使用异步编排优化
+                this.itemMapper.insert(itemEntity);
             }
         });
+        //在订单创建完成之后，返回之前 发送消息给延迟队列，90s之后变成死信消息 定时关单
+        this.rabbitTemplate.convertAndSend("ORDER_EXCHANGE", "order.ttl", submitVo.getOrderToken());
         return entity;
     }
 

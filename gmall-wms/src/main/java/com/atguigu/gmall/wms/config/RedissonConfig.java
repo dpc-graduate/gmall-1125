@@ -1,4 +1,4 @@
-package com.atguigu.gmall.wms;
+package com.atguigu.gmall.wms.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
